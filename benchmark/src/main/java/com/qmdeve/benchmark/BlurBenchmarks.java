@@ -20,7 +20,7 @@ import java.util.List;
  */
 final class BlurBenchmarks {
 
-    static final String PACKAGE = "com.qmdeve.blurview.demo";
+    static final String PACKAGE = "com.qmdeve.vulkanblur.demo";
 
     private BlurBenchmarks() {
     }

@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Frame-timing baseline for the "simple BlurView scene" ({@code BlurViewActivity}):
- * a SINGLE centered {@link com.qmdeve.blurview.widget.BlurView} over a vertical
+ * a SINGLE centered {@link com.qmdeve.vulkanblur.widget.BlurView} over a vertical
  * {@code ScrollView} of images. Measures per-view blur cost.
  * <p>
  * The BlurView only re-runs {@code performBlurSync} when the pixels behind it change,

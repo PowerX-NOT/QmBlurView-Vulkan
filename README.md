@@ -1,89 +1,78 @@
 <div align="center">
 
-## QmBlurView
+# QmBlurView
 
-**QmBlurView is an Android UI component library for real-time blur surfaces and blur-based widgets.  
-The core blur backend now uses a native Vulkan Dual Kawase pipeline.**
-
-<br>
-
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://GitHub.com/QmDeve/QmBlurView/)
-[![Publish New Version](https://github.com/QmDeve/QmBlurView/actions/workflows/publish.yml/badge.svg)](https://github.com/QmDeve/QmBlurView/actions/workflows/publish.yml)
-[![License](https://img.shields.io/github/license/QmDeve/QmBlurView.svg?logo=github&color=blue&label=License)](https://github.com/QmDeve/QmBlurView/blob/master/LICENSE)
-[![Maven Central Version](https://img.shields.io/maven-central/v/com.qmdeve.blurview/core?label=Maven%20Central)](https://central.sonatype.com/artifact/com.qmdeve.blurview/core)
-[![JitPack](https://jitpack.io/v/com.qmdeve/QmBlurView.svg)](https://jitpack.io/#com.qmdeve/QmBlurView)
-[![GitHub Releases](https://img.shields.io/github/release/QmDeve/QmBlurView?label=GitHub%20Releases)](https://github.com/QmDeve/QmBlurView/releases)
+Android blur surfaces and blur-backed widgets, driven by a native **Vulkan Dual Kawase V2** pipeline.
 
 </div>
 
 ---
 
-## Overview
+## What it is
 
-`QmBlurView` provides reusable blur widgets for Android apps:
+`QmBlurView` captures the content behind a view, blurs it on the GPU, and draws the result with an overlay and optional rounded corners.
 
-- `BlurView`
-- `ProgressiveBlurView`
-- `BlurButtonView`
-- `BlurFloatingButtonView`
-- `BlurSwitchButtonView`
-- `BlurTitlebarView`
-- `BlurViewGroup`
-- navigation helpers in the `navigation` module
-- image transformations in the `transform` module
+The blur itself is not a CPU Gaussian / StackBlur pass. `core` ships a native library (`libQmVulkanBlur.so`) that runs Dual Kawase V2 compute shaders — the same downsample / upsample pyramid used by Android RenderEngine — then reads the bitmap back for the widget to draw.
 
-The blur engine lives in `core` and is implemented in native code. The current backend is a Vulkan compute pipeline that runs a Dual Kawase blur.
-
-## Features
-
-- Real-time blur views and view groups
-- Native Vulkan-backed blur processing
-- Configurable blur radius and blur rounds
-- Navigation components for blur-based UI
-- Glide and Picasso transformation helpers
+Widgets live in `core`. Bottom navigation is a separate `navigation` artifact. Glide and Picasso helpers live in `transform`.
 
 ## Preview
 
-|                               BlurView                                |                             BlurButtonView                              |                               ProgressiveBlurView                                |
-| :-------------------------------------------------------------------: | :---------------------------------------------------------------------: | :------------------------------------------------------------------------------: |
+| BlurView | BlurButtonView | ProgressiveBlurView |
+| :---: | :---: | :---: |
 | <img src="https://blurview.qmdeve.com/img/BlurView.jpg" width="250"/> | <img src="https://blurview.qmdeve.com/img/BlurButton.jpg" width="250"/> | <img src="https://blurview.qmdeve.com/img/ProgressiveBlurView.jpg" width="250"/> |
 
-|                               BlurTitleBarView                                |                                BlurSwitchButtonView                                |                             BlurBottomNavigationView                              |
-| :---------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------: |
+| BlurTitlebarView | BlurSwitchButtonView | BlurBottomNavigationView |
+| :---: | :---: | :---: |
 | <img src="https://blurview.qmdeve.com/img/BlurTitlebarView.jpg" width="250"/> | <img src="https://blurview.qmdeve.com/img/BlurSwitchButton_true.jpg" width="250"/> | <img src="https://blurview.qmdeve.com/img/BlurBottomNavigation.jpg" width="250"/> |
 
 ## Requirements
 
-- Android `minSdk 21`
-- NDK-enabled build for the `core` module
-- A device with a working Vulkan loader if you want the native blur path to execute successfully at runtime
+- `minSdk 21`
+- A device with `libvulkan.so` (Android 7 / API 24+) for the native blur to run
+- Building `core` from source needs NDK `28.2.13676358` and CMake `3.22.1`
 
-## Installation
+On a device without Vulkan, `System.loadLibrary("QmVulkanBlur")` can fail and the widgets will not blur.
 
-Add the modules you need to your app:
+## Install
+
+This Vulkan package is not on Maven Central yet. Clone the repo and use the modules:
 
 ```gradle
 dependencies {
-    implementation "com.qmdeve.blurview:core:1.3.0"
+    implementation project(':core')
 
     // Optional
-    implementation "com.qmdeve.blurview:navigation:1.3.0"
-    implementation "com.qmdeve.blurview:transform:1.3.0"
+    implementation project(':navigation')
+    implementation project(':transform')
 }
 ```
 
-## Basic Usage
+## Widgets (`core`)
+
+| Class | Role |
+| --- | --- |
+| `BlurView` | Frosted overlay that blurs whatever is behind it |
+| `BlurViewGroup` | Same pipeline, hosted inside a `ViewGroup` |
+| `ProgressiveBlurView` / `ProgressiveBlurViewGroup` | Directional fade of blur strength |
+| `BlurButtonView` | Button with a blurred background |
+| `BlurFloatingButtonView` | FAB-style control on a blur surface |
+| `BlurSwitchButtonView` | Switch on a blur surface |
+| `BlurTitlebarView` | Title bar that blurs content scrolling underneath |
+
+## BlurView
 
 XML:
 
 ```xml
-<com.qmdeve.blurview.widget.BlurView
+<com.qmdeve.vulkanblur.widget.BlurView
     android:id="@+id/blurView"
     android:layout_width="match_parent"
     android:layout_height="220dp"
     app:blurRadius="24dp"
-    app:downsampleFactor="2.5"
-    app:overlayColor="#66FFFFFF" />
+    app:overlayColor="#66FFFFFF"
+    app:cornerRadius="16dp"
+    app:downsampleFactor="2.5" />
 ```
 
 Code:
@@ -92,58 +81,54 @@ Code:
 BlurView blurView = findViewById(R.id.blurView);
 blurView.setBlurRadius(24f);
 blurView.setBlurRounds(2);
+blurView.setOverlayColor(0x66FFFFFF);
+blurView.setCornerRadius(16f);
 ```
 
-The blur widgets capture content behind them, downsample it, run the native blur backend, and then draw the blurred result with the configured overlay and corner treatment.
+| API / attr | What it does |
+| --- | --- |
+| `blurRadius` / `setBlurRadius` | Strength. Dual Kawase V2 maps this to pyramid depth and sample offset |
+| `setBlurRounds` | Extra strength: native uses `radius * rounds` (1–15) |
+| `overlayColor` / `setOverlayColor` | Tint drawn on top of the blurred bitmap |
+| `cornerRadius` / per-corner setters | Clip the result |
+| `downsampleFactor` / `setDownsampleFactor` | Capture scale. `0` (default) uses `2.52`. Higher is cheaper, softer |
+
+The view captures behind itself, downsamples for scroll cost, runs Dual Kawase on that bitmap, then draws with bilinear filtering.
+
+## Image blur (`transform`)
+
+Same native backend, for static bitmaps.
+
+Glide:
+
+```java
+Glide.with(this)
+    .load(url)
+    .transform(new com.qmdeve.vulkanblur.transform.glide.BlurTransformation(24f, 50f))
+    .into(imageView);
+```
+
+Picasso:
+
+```java
+Picasso.get()
+    .load(url)
+    .transform(new com.qmdeve.vulkanblur.transform.picasso.BlurTransformation(25f, 50f))
+    .into(imageView);
+```
+
+`BlurTransformation()` defaults to radius `25`. The second argument is corner radius in px (`0` = square).
+
+## Navigation (`navigation`)
+
+`BlurBottomNavigationView` is a tab bar that blurs the content behind it. Pair it with `ViewPager` / `ViewPager2` — see `BlurBottomNavigationActivity` in the demo.
 
 ## Modules
 
-- `core`: blur widgets and native Vulkan blur backend
-- `navigation`: bottom navigation integration
-- `transform`: Glide and Picasso blur transformations
-- `app`: demo application
-- `benchmark`: benchmark project
-
-## Development
-
-Build the core library:
-
-```bash
-bash ./gradlew :core:assembleDebug
-```
-
-Build the demo app:
-
-```bash
-bash ./gradlew :app:assembleDebug
-```
-
-The native blur backend is built with CMake from `core/src/main/cpp`.
-
-## Documentation
-
-Project docs: [https://blurview.qmdeve.com](https://blurview.qmdeve.com)
-
-## License
-
-```text
-Copyright © 2025-2026 Donny Yang
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
+| Module | Artifact | Contents |
+| --- | --- | --- |
+| `core` | `com.qmdeve.vulkanblur:core` | Widgets + `libQmVulkanBlur.so` |
+| `navigation` | `com.qmdeve.vulkanblur:navigation` | `BlurBottomNavigationView` |
+| `transform` | `com.qmdeve.vulkanblur:transform` | Glide / Picasso transforms |
+| `app` | — | Demo |
+| `benchmark` | — | Frame-timing scenes |

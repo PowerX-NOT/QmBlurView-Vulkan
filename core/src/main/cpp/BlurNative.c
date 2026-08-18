@@ -39,7 +39,7 @@
 #define LOG_TAG "libbitmaputils"
 #define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
-JNIEXPORT void JNICALL Java_com_qmdeve_blurview_BlurNative_blur(JNIEnv* env, jclass clzz, jobject bitmapOut, jint radius, jint rounds) {
+JNIEXPORT void JNICALL Java_com_qmdeve_vulkanblur_BlurNative_blur(JNIEnv* env, jclass clzz, jobject bitmapOut, jint radius, jint rounds) {
     AndroidBitmapInfo   infoOut;
     void*               pixelsOut;
 

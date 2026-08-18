@@ -49,7 +49,7 @@
             android:layout_height="match_parent" />
 
         <!-- Blur overlay at the bottom -->
-        <com.qmdeve.blurview.widget.BlurView
+        <com.qmdeve.vulkanblur.widget.BlurView
             android:id="@+id/blurView"
             android:layout_width="match_parent"
             android:layout_height="150dp"

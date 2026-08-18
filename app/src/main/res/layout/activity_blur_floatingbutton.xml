@@ -38,7 +38,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <com.qmdeve.blurview.widget.BlurFloatingButtonView
+    <com.qmdeve.vulkanblur.widget.BlurFloatingButtonView
         android:id="@+id/blurFloatingButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />

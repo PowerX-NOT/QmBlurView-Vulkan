@@ -46,7 +46,7 @@
             android:shadowDx="2"
             android:shadowDy="2"/>
 
-        <com.qmdeve.blurview.widget.BlurViewGroup
+        <com.qmdeve.vulkanblur.widget.BlurViewGroup
             android:id="@+id/blurView"
             android:layout_width="match_parent"
             android:layout_height="200dp"
@@ -63,7 +63,7 @@
                 android:textSize="18sp"
                 android:gravity="center" />
 
-        </com.qmdeve.blurview.widget.BlurViewGroup>
+        </com.qmdeve.vulkanblur.widget.BlurViewGroup>
 
     </LinearLayout>
 

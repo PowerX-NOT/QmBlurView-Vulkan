@@ -112,7 +112,7 @@ ext.coreMavenConfig = { projectInstance ->
         coordinates(projectInstance.GROUP_NAME, projectInstance.ARTIFACT_NAME, projectInstance.VERSION)
 
         pom {
-            name = 'QmBlurView Components For Android'
+            name = 'QmVulkanBlur Components For Android'
             description = projectInstance.DESCRIPTION
             url = projectInstance.WEBSITE
             inceptionYear = '2025'
@@ -176,7 +176,7 @@ ext.navMavenConfig = { projectInstance ->
         coordinates(projectInstance.GROUP_NAME, projectInstance.NAVIGATION_ARTIFACT_NAME, projectInstance.VERSION)
 
         pom {
-            name = 'QmBlurView Component Navigation Extended'
+            name = 'QmVulkanBlur Navigation'
             description = projectInstance.DESCRIPTION
             url = projectInstance.WEBSITE
             inceptionYear = '2025'
@@ -240,7 +240,7 @@ ext.tranMavenConfig = { projectInstance ->
         coordinates(projectInstance.GROUP_NAME, projectInstance.TRANSFORM_ARTIFACT_NAME, projectInstance.VERSION)
 
         pom {
-            name = 'QmBlurView Component Transform Extended'
+            name = 'QmVulkanBlur Transform'
             description = projectInstance.DESCRIPTION
             url = projectInstance.WEBSITE
             inceptionYear = '2025'

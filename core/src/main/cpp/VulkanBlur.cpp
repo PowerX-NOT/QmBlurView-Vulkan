@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#define LOG_TAG "QmBlurVk"
+#define LOG_TAG "QmVulkanBlurVk"
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 namespace {
@@ -88,7 +88,7 @@ bool createInstance() {
 
     VkApplicationInfo app{};
     app.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    app.pApplicationName = "QmBlur";
+    app.pApplicationName = "QmVulkanBlur";
     app.apiVersion = api;
     VkInstanceCreateInfo ci{};
     ci.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

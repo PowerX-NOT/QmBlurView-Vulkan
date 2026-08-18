@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.22.1)
-project("QmBlur" LANGUAGES C CXX)
+project("QmVulkanBlur" LANGUAGES C CXX)
 
 add_library(
-        QmBlur
+        QmVulkanBlur
         SHARED
         BlurNative.c
         VulkanBlur.cpp
@@ -11,13 +11,13 @@ add_library(
         VulkanBuffer.cpp
 )
 
-target_include_directories(QmBlur PRIVATE
+target_include_directories(QmVulkanBlur PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_BINARY_DIR}
 )
-target_compile_features(QmBlur PRIVATE cxx_std_17)
-target_compile_options(QmBlur PRIVATE -O3)
-target_compile_options(QmBlur PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions -fno-rtti>)
+target_compile_features(QmVulkanBlur PRIVATE cxx_std_17)
+target_compile_options(QmVulkanBlur PRIVATE -O3)
+target_compile_options(QmVulkanBlur PRIVATE $<$<COMPILE_LANGUAGE:CXX>:-fno-exceptions -fno-rtti>)
 
 find_library(log-lib log)
 find_library(jni-graphics-lib jnigraphics)
@@ -42,7 +42,7 @@ if(NOT EXISTS "${_vk_stub}")
 endif()
 
 target_link_libraries(
-        QmBlur
+        QmVulkanBlur
         ${log-lib}
         ${jni-graphics-lib}
         ${_vk_stub}
@@ -77,4 +77,4 @@ embed_comp(kawase_up)
 embed_comp(kawase_draw)
 set_source_files_properties(KawaseBlur.cpp PROPERTIES OBJECT_DEPENDS "${_shader_incs}")
 add_custom_target(shaders DEPENDS ${_shader_incs})
-add_dependencies(QmBlur shaders)
+add_dependencies(QmVulkanBlur shaders)

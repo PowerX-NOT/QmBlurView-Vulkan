@@ -4,7 +4,7 @@ build
 /.gradle
 local.properties
 gradle-daemon-jvm.properties
-app/release/baselineProfiles
-app/release/output-metadata.json
+app/release/
+
 trace_processor
 *.perfetto

@@ -36,7 +36,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <com.qmdeve.blurview.widget.BlurView
+    <com.qmdeve.vulkanblur.widget.BlurView
         android:id="@+id/blurView"
         android:layout_width="200dp"
         android:layout_height="200dp"

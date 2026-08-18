@@ -70,7 +70,7 @@
                 android:layout_height="200dp"
                 android:layout_marginBottom="20dp">
 
-                <com.qmdeve.blurview.widget.BlurView
+                <com.qmdeve.vulkanblur.widget.BlurView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     app:blurRadius="15dp"
@@ -132,7 +132,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <com.qmdeve.blurview.widget.BlurView
+        <com.qmdeve.vulkanblur.widget.BlurView
             android:id="@+id/bottom_blur_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

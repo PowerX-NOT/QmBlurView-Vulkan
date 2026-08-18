@@ -39,7 +39,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <com.qmdeve.blurview.widget.ProgressiveBlurViewGroup
+    <com.qmdeve.vulkanblur.widget.ProgressiveBlurViewGroup
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:layout_alignParentTop="true"
@@ -60,9 +60,9 @@
                 android:textSize="20sp"
                 android:textStyle="bold"/>
 
-    </com.qmdeve.blurview.widget.ProgressiveBlurViewGroup>
+    </com.qmdeve.vulkanblur.widget.ProgressiveBlurViewGroup>
 
-    <com.qmdeve.blurview.widget.ProgressiveBlurView
+    <com.qmdeve.vulkanblur.widget.ProgressiveBlurView
             android:layout_width="match_parent"
             android:layout_height="150dp"
             android:layout_alignParentBottom="true"

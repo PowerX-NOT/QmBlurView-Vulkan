@@ -39,7 +39,7 @@ plugins {
 apply from: '../config.gradle'
 
 android {
-    namespace 'com.qmdeve.blurview.transform'
+    namespace 'com.qmdeve.vulkanblur.transform'
     configs(android)
 }
 

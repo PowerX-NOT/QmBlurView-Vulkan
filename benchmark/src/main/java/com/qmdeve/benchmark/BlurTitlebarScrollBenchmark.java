@@ -12,8 +12,8 @@ import org.junit.runner.RunWith;
 /**
  * Frame-timing benchmark for the complex, combined "Blur Titlebar" scene
  * ({@code BlurTitlebarActivity}): FIVE blur views at once — three
- * {@link com.qmdeve.blurview.widget.BlurTitlebarView} plus two
- * {@link com.qmdeve.blurview.widget.BlurButtonView} — over a vertical
+ * {@link com.qmdeve.vulkanblur.widget.BlurTitlebarView} plus two
+ * {@link com.qmdeve.vulkanblur.widget.BlurButtonView} — over a vertical
  * {@code ScrollView} of images.
  * <p>
  * Every blur view re-runs {@code performBlurSync} synchronously on the main thread each

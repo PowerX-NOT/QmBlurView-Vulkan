@@ -35,11 +35,11 @@ plugins {
 }
 
 android {
-    namespace 'com.qmdeve.blurview.demo'
+    namespace 'com.qmdeve.vulkanblur.demo'
     compileSdk { version = release(36) }
 
     defaultConfig {
-        applicationId "com.qmdeve.blurview.demo"
+        applicationId "com.qmdeve.vulkanblur.demo"
         minSdk { version = release(21) }
         targetSdk { version = release(36) }
         versionCode 1
