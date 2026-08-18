@@ -24,9 +24,8 @@ ORDER = [
     "gfxFrameJankPercent", "deadlineMissedFrameCount", "highInputLatencyFrameCount",
     "gfxFrameTime99thPercentileMs", "gfxFrameTime95thPercentileMs",
     "gfxFrameTime90thPercentileMs", "gfxFrameTime50thPercentileMs",
-    "BlurView.performBlurSyncSumMs", "BlurView.blurSumMs",
-    "BlurView.captureDecorViewSumMs", "BlurNative.passHSumMs",
-    "BlurNative.passVSumMs", "BlurNative.copyInputSumMs",
+    "BlurView.performBlurSyncSumMs", "BlurView.captureDecorViewSumMs",
+    "BlurView.blurSumMs", "BlurView.drawResultSumMs",
 ]
 
 

@@ -40,18 +40,15 @@ final class BlurBenchmarks {
      * {@code gfxFrameTime50/90/95/99thPercentileMs}, {@code gfxFrameTotalCount}.
      * <p>
      * TraceSectionMetric reads slice durations by name (also schema-independent) for the
-     * per-stage blur breakdown; sections mirror the ATrace sections in :core
-     * (BaseBlurView / BlurNative), which every blur widget shares.
+     * per-stage Dual Kawase breakdown; names match ATrace in {@code BaseBlurView}.
      */
     static List<Metric> metrics() {
         return Arrays.asList(
                 new FrameTimingGfxInfoMetric(),   // jank% + deadlineMissed + frame-time percentiles
-                sum("BlurView.performBlurSync"),  // whole per-frame blur
-                sum("BlurView.blur"),             // CPU blur
+                sum("BlurView.performBlurSync"),  // capture + Vulkan Dual Kawase + present
                 sum("BlurView.captureDecorView"), // software window capture
-                sum("BlurNative.passH"),          // dispatch+await barrier (H)
-                sum("BlurNative.passV"),          // dispatch+await barrier (V)
-                sum("BlurNative.copyInput"));
+                sum("BlurView.blur"),             // JNI + Dual Kawase upload/dispatch/readback
+                sum("BlurView.drawResult"));      // blit blurred bitmap + overlay
     }
 
     /** Launch a specific (benchmark-exported) demo activity and wait until it is scrollable. */

@@ -15,11 +15,8 @@ import org.junit.runner.RunWith;
  * {@code ScrollView} of images. Measures per-view blur cost.
  * <p>
  * The BlurView only re-runs {@code performBlurSync} when the pixels behind it change,
- * so the workload is a deterministic scroll of the images underneath. {@link
- * androidx.benchmark.macro.FrameTimingMetric} gives frameCount; per-section timings come
- * from TraceSectionMetric ({@link BlurBenchmarks#metrics()}); frame-duration percentiles
- * come from {@code benchmark/frame_stats.py} (FrameTimingMetric durations are empty on
- * this preview OS).
+ * so the workload is a deterministic scroll of the images underneath. Metrics come from
+ * {@link BlurBenchmarks#metrics()} (gfxinfo jank + Dual Kawase ATrace sections).
  */
 @RunWith(AndroidJUnit4.class)
 public class BlurViewScrollBenchmark {

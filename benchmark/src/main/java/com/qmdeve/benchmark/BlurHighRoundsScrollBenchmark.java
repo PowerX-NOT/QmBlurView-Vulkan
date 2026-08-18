@@ -16,15 +16,9 @@ import org.junit.runner.RunWith;
  * {@code BlurViewActivity} as {@link BlurViewScrollBenchmark}, but driven at a HIGH
  * blur rounds count (8 instead of the default) via the {@code blurRounds} intent extra.
  * <p>
- * This scene isolates the rounds-scaling cost — 8 rounds over ONE blur view. Rounds are
- * now grouped by direction (H^n·V^n), so a blur pays exactly 2 dispatch+latch barriers
- * regardless of rounds; extra rounds cost only pixel work. The interleaved (H·V)^n scheme
- * instead paid 2×rounds barriers, so at 8 rounds it paid 16 barriers per blur. The
- * grouped optimization should therefore keep dispatch overhead ~flat vs the default-rounds
- * scenes here, where the old scheme scaled it linearly with rounds.
- * <p>
- * Same metrics + scroll gesture as every scene (see {@link BlurBenchmarks}) so the numbers
- * stay comparable.
+ * Isolates Dual Kawase strength scaling: native uses {@code radius * rounds}, so 8
+ * rounds deepen the pyramid / step vs the default-rounds scene. Same metrics + scroll
+ * as every scene (see {@link BlurBenchmarks}).
  */
 @RunWith(AndroidJUnit4.class)
 public class BlurHighRoundsScrollBenchmark {
