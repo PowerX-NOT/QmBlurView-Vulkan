@@ -296,7 +296,7 @@ public class BaseBlurViewGroup {
             return false;
         }
 
-        float downsampleFactor = mDownsampleFactor > 0 ? mDownsampleFactor : 1f;
+        float downsampleFactor = mDownsampleFactor > 0 ? mDownsampleFactor : 2.52f;
         float radius = mBlurRadius / downsampleFactor;
 
         if (width == 0 || height == 0) return false;

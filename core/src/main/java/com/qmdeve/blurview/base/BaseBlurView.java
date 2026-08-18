@@ -482,7 +482,7 @@ public abstract class BaseBlurView extends View {
             return false;
         }
 
-        float downsampleFactor = mDownsampleFactor > 0 ? mDownsampleFactor : 1f;
+        float downsampleFactor = mDownsampleFactor > 0 ? mDownsampleFactor : 2.52f;
         float radius = mBlurRadius / downsampleFactor;
 
         int width = getWidth();
