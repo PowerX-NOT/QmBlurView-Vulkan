@@ -2,16 +2,14 @@
 
 ## QmBlurView
 
-**QmBlurView is an `Android UI` component library that provides real-time, dynamic Gaussian blur effects. It uses native C++ code for efficient blur processing and provides a set of blur UI components to enhance your application design**
+**QmBlurView is an Android UI component library for real-time blur surfaces and blur-based widgets.  
+The core blur backend now uses a native Vulkan Dual Kawase pipeline.**
 
 <br>
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?logo=github)](https://GitHub.com/QmDeve/QmBlurView/)
 [![Publish New Version](https://github.com/QmDeve/QmBlurView/actions/workflows/publish.yml/badge.svg)](https://github.com/QmDeve/QmBlurView/actions/workflows/publish.yml)
-
 [![License](https://img.shields.io/github/license/QmDeve/QmBlurView.svg?logo=github&color=blue&label=License)](https://github.com/QmDeve/QmBlurView/blob/master/LICENSE)
-[![Android](https://img.shields.io/badge/Android-5.0%2B-brightgreen.svg)](https://developer.android.com)
-
 [![Maven Central Version](https://img.shields.io/maven-central/v/com.qmdeve.blurview/core?label=Maven%20Central)](https://central.sonatype.com/artifact/com.qmdeve.blurview/core)
 [![JitPack](https://jitpack.io/v/com.qmdeve/QmBlurView.svg)](https://jitpack.io/#com.qmdeve/QmBlurView)
 [![GitHub Releases](https://img.shields.io/github/release/QmDeve/QmBlurView?label=GitHub%20Releases)](https://github.com/QmDeve/QmBlurView/releases)
@@ -20,11 +18,29 @@
 
 ---
 
+## Overview
+
+`QmBlurView` provides reusable blur widgets for Android apps:
+
+- `BlurView`
+- `ProgressiveBlurView`
+- `BlurButtonView`
+- `BlurFloatingButtonView`
+- `BlurSwitchButtonView`
+- `BlurTitlebarView`
+- `BlurViewGroup`
+- navigation helpers in the `navigation` module
+- image transformations in the `transform` module
+
+The blur engine lives in `core` and is implemented in native code. The current backend is a Vulkan compute pipeline that runs a Dual Kawase blur.
+
 ## Features
 
-- **High Performance**: Native blur algorithm implemented in C/C++ for maximum speed and smoothness.
-- **Rich Component Library**: Component that includes multiple types of blur effects.
-- **Image Loading Support**: Built-in transformations for **Glide** and **Picasso**.
+- Real-time blur views and view groups
+- Native Vulkan-backed blur processing
+- Configurable blur radius and blur rounds
+- Navigation components for blur-based UI
+- Glide and Picasso transformation helpers
 
 ## Preview
 
@@ -36,37 +52,82 @@
 | :---------------------------------------------------------------------------: | :--------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------: |
 | <img src="https://blurview.qmdeve.com/img/BlurTitlebarView.jpg" width="250"/> | <img src="https://blurview.qmdeve.com/img/BlurSwitchButton_true.jpg" width="250"/> | <img src="https://blurview.qmdeve.com/img/BlurBottomNavigation.jpg" width="250"/> |
 
-## Integration
+## Requirements
 
-[![Maven Central](https://img.shields.io/maven-central/v/com.qmdeve.blurview/core?label=Maven%20Central)](https://central.sonatype.com/artifact/com.qmdeve.blurview/core)
+- Android `minSdk 21`
+- NDK-enabled build for the `core` module
+- A device with a working Vulkan loader if you want the native blur path to execute successfully at runtime
 
-Add the dependencies to your module's `build.gradle` file:
+## Installation
+
+Add the modules you need to your app:
 
 ```gradle
 dependencies {
-    // Core Library (Required)
-    implementation 'com.qmdeve.blurview:core:1.3.0'
+    implementation "com.qmdeve.blurview:core:1.3.0"
 
-    // Navigation Support (Optional)
-    implementation 'com.qmdeve.blurview:navigation:1.3.0'
-
-    // Image Loading Transformations (Optional - Glide/Picasso)
-    implementation 'com.qmdeve.blurview:transform:1.3.0'
+    // Optional
+    implementation "com.qmdeve.blurview:navigation:1.3.0"
+    implementation "com.qmdeve.blurview:transform:1.3.0"
 }
 ```
 
-## Usage
+## Basic Usage
 
-Please refer to the documentation to learn how to use the library
+XML:
 
-**Documentation: [https://blurview.qmdeve.com](https://blurview.qmdeve.com)**
+```xml
+<com.qmdeve.blurview.widget.BlurView
+    android:id="@+id/blurView"
+    android:layout_width="match_parent"
+    android:layout_height="220dp"
+    app:blurRadius="24dp"
+    app:downsampleFactor="2.5"
+    app:overlayColor="#66FFFFFF" />
+```
 
----
+Code:
+
+```java
+BlurView blurView = findViewById(R.id.blurView);
+blurView.setBlurRadius(24f);
+blurView.setBlurRounds(2);
+```
+
+The blur widgets capture content behind them, downsample it, run the native blur backend, and then draw the blurred result with the configured overlay and corner treatment.
+
+## Modules
+
+- `core`: blur widgets and native Vulkan blur backend
+- `navigation`: bottom navigation integration
+- `transform`: Glide and Picasso blur transformations
+- `app`: demo application
+- `benchmark`: benchmark project
+
+## Development
+
+Build the core library:
+
+```bash
+bash ./gradlew :core:assembleDebug
+```
+
+Build the demo app:
+
+```bash
+bash ./gradlew :app:assembleDebug
+```
+
+The native blur backend is built with CMake from `core/src/main/cpp`.
+
+## Documentation
+
+Project docs: [https://blurview.qmdeve.com](https://blurview.qmdeve.com)
 
 ## License
 
-```
-Copyright ©️ 2025-2026 Donny Yang
+```text
+Copyright © 2025-2026 Donny Yang
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
