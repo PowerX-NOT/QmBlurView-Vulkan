@@ -34,7 +34,7 @@
 #include <android/log.h>
 #include <android/bitmap.h>
 
-#include "VulkanDualKawase.h"
+#include "VulkanBlur.h"
 
 #define LOG_TAG "libbitmaputils"
 #define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
@@ -61,10 +61,11 @@ JNIEXPORT void JNICALL Java_com_qmdeve_blurview_BlurNative_blur(JNIEnv* env, jcl
         return;
     }
 
+    (void)rounds;
     int h = infoOut.height;
     int w = infoOut.width;
 
-    if (!dualKawaseV2_vulkan_rgba((unsigned char*)pixelsOut, w, h, radius, rounds)) {
+    if (!vulkan_kawase_blur_rgba((unsigned char*)pixelsOut, w, h, (int)infoOut.stride, (float)radius)) {
         LOGE("Vulkan blur failed");
     }
 

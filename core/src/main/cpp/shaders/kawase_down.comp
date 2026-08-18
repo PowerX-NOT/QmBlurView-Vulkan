@@ -1,0 +1,42 @@
+#version 450
+
+layout(local_size_x = 16, local_size_y = 16) in;
+
+layout(binding = 0) uniform sampler2D src;
+layout(binding = 1, rgba8) writeonly uniform image2D dst;
+
+// kind 0: 4x downsample, 4 diamond taps at ±0.25 dest px (RenderEngine V2 quarter)
+// kind 1: 2x downsample, center*4 + 4 taps at ±0.5 dest px (V2 half)
+layout(constant_id = 0) const int KIND = 0;
+
+layout(push_constant) uniform Params {
+    vec2 resolution;
+    float offset;
+    float alpha;
+    int kind;
+} p;
+
+void main() {
+    const ivec2 dstPixel = ivec2(gl_GlobalInvocationID.xy);
+    if (dstPixel.x >= int(p.resolution.x) || dstPixel.y >= int(p.resolution.y)) {
+        return;
+    }
+
+    const vec2 uv = (vec2(dstPixel) + 0.5) / p.resolution;
+    if (KIND == 0) {
+        const vec2 o = vec2(0.25) / p.resolution;
+        vec3 c = textureLod(src, uv + vec2(o.x, o.y), 0.0).rgb;
+        c += textureLod(src, uv + vec2(o.x, -o.y), 0.0).rgb;
+        c += textureLod(src, uv + vec2(-o.x, -o.y), 0.0).rgb;
+        c += textureLod(src, uv + vec2(-o.x, o.y), 0.0).rgb;
+        imageStore(dst, dstPixel, vec4(c * 0.25, 1.0));
+    } else {
+        const vec2 o = vec2(0.5) / p.resolution;
+        vec3 c = textureLod(src, uv, 0.0).rgb * 4.0;
+        c += textureLod(src, uv + vec2(o.x, o.y), 0.0).rgb;
+        c += textureLod(src, uv + vec2(o.x, -o.y), 0.0).rgb;
+        c += textureLod(src, uv + vec2(-o.x, -o.y), 0.0).rgb;
+        c += textureLod(src, uv + vec2(-o.x, o.y), 0.0).rgb;
+        imageStore(dst, dstPixel, vec4(c * 0.125, 1.0));
+    }
+}
