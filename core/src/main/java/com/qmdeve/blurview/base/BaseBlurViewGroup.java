@@ -65,6 +65,7 @@ public class BaseBlurViewGroup {
     private float mBlurRadius;
     private float mDownsampleFactor = 0f;
     private final Blur mBlur;
+    private final Paint mBitmapPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
     private boolean mDirty = true;
     private Bitmap mBitmapToBlur, mBlurredBitmap;
     private Canvas mBlurringCanvas;
@@ -295,13 +296,8 @@ public class BaseBlurViewGroup {
             return false;
         }
 
-        float downsampleFactor = mDownsampleFactor > 0 ? mDownsampleFactor : 2.52f;
+        float downsampleFactor = mDownsampleFactor > 0 ? mDownsampleFactor : 1f;
         float radius = mBlurRadius / downsampleFactor;
-
-        if (mDownsampleFactor <= 0 && radius > 25) {
-            downsampleFactor *= radius / 25;
-            radius = 25;
-        }
 
         if (width == 0 || height == 0) return false;
 
@@ -600,10 +596,10 @@ public class BaseBlurViewGroup {
                 mClipRect.set(dstRect);
                 updatePath(mClipRect);
                 canvas.clipPath(mG3Path);
-                canvas.drawBitmap(mBlurredBitmap, srcRect, dstRect, null);
+                canvas.drawBitmap(mBlurredBitmap, srcRect, dstRect, mBitmapPaint);
                 canvas.restore();
             } else {
-                canvas.drawBitmap(mBlurredBitmap, srcRect, dstRect, null);
+                canvas.drawBitmap(mBlurredBitmap, srcRect, dstRect, mBitmapPaint);
             }
         }
 

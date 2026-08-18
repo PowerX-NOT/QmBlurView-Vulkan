@@ -61,11 +61,11 @@ JNIEXPORT void JNICALL Java_com_qmdeve_blurview_BlurNative_blur(JNIEnv* env, jcl
         return;
     }
 
-    (void)rounds;
+    (void)clzz;
     int h = infoOut.height;
     int w = infoOut.width;
 
-    if (!vulkan_kawase_blur_rgba((unsigned char*)pixelsOut, w, h, (int)infoOut.stride, (float)radius)) {
+    if (!vulkan_kawase_blur_rgba((unsigned char*)pixelsOut, w, h, (int)infoOut.stride, (float)radius, rounds)) {
         LOGE("Vulkan blur failed");
     }
 

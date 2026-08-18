@@ -341,14 +341,13 @@ bool KawaseBlur::rebuildPyramid(const VulkanImage& src, uint32_t extraPasses, st
             return false;
         }
     }
-    const bool needDraw = radius_ < kMaxCrossFadeRadius;
-    if (needDraw) {
-        if (!drawImage_.create(device_, physical_, srcW_, srcH_, VK_FORMAT_R8G8B8A8_UNORM, usage, error)) {
-            return false;
-        }
+    // Always resolve to full-res with the draw shader (linear upsample). Skipping it
+    // left a 1/4 pyramid blit that reads as pixelation over a downsampled BlurView.
+    if (!drawImage_.create(device_, physical_, srcW_, srcH_, VK_FORMAT_R8G8B8A8_UNORM, usage, error)) {
+        return false;
     }
 
-    const uint32_t nSets = nDown + extraPasses + (needDraw ? 1u : 0u);
+    const uint32_t nSets = nDown + extraPasses + 1u;
     VkDescriptorPoolSize poolSizes[2]{};
     poolSizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     poolSizes[0].descriptorCount = nSets * 2;
@@ -378,13 +377,9 @@ bool KawaseBlur::rebuildPyramid(const VulkanImage& src, uint32_t extraPasses, st
     };
     if (!allocSets(nDown, &downSets_)) return false;
     if (!allocSets(extraPasses, &upSets_)) return false;
-    if (needDraw) {
-        std::vector<VkDescriptorSet> drawSets;
-        if (!allocSets(1, &drawSets)) return false;
-        drawSet_ = drawSets[0];
-    } else {
-        drawSet_ = VK_NULL_HANDLE;
-    }
+    std::vector<VkDescriptorSet> drawSets;
+    if (!allocSets(1, &drawSets)) return false;
+    drawSet_ = drawSets[0];
 
     for (uint32_t i = 0; i < nDown; ++i) {
         const VulkanImage& in = (i == 0) ? src : downImages_[i - 1];
@@ -396,9 +391,7 @@ bool KawaseBlur::rebuildPyramid(const VulkanImage& src, uint32_t extraPasses, st
         writeSet(upSets_[i], in.view, upImages_[i].view, mix.view, sampler_);
     }
     const VulkanImage& blurOut = extraPasses > 0 ? upImages_.back() : downImages_.front();
-    if (needDraw) {
-        writeSet(drawSet_, blurOut.view, drawImage_.view, src.view, samplerMirror_);
-    }
+    writeSet(drawSet_, blurOut.view, drawImage_.view, src.view, samplerMirror_);
     pyramidReady_ = false;
     LOGI("kawase2 rebuild %ux%u extra=%u step=%.2f depth=%.2f", srcW_, srcH_, extraPasses, step_,
          filterDepth_);
@@ -428,15 +421,12 @@ bool KawaseBlur::setRadius(float radius, const VulkanImage& src, std::string* er
         if (error) *error = "KawaseBlur::setRadius before create";
         return false;
     }
-    const bool hadDraw = radius_ < kMaxCrossFadeRadius;
     const KawaseMapped mapped = mapRadius(radius);
-    const bool needDraw = radius < kMaxCrossFadeRadius;
     radius_ = radius;
     step_ = mapped.step;
     filterDepth_ = mapped.depth;
     if (mapped.extraPasses + 1 == downImages_.size() && src.width == srcW_ && src.height == srcH_) {
-        if (hadDraw == needDraw) return true;
-        return rebuildPyramid(src, mapped.extraPasses, error);
+        return true;
     }
     return rebuildPyramid(src, mapped.extraPasses, error);
 }
@@ -512,8 +502,7 @@ bool KawaseBlur::record(VkCommandBuffer cmd, std::string* error) {
                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
 
-    const bool mixOriginal =
-            debugLevel_ <= 0 && radius_ < kMaxCrossFadeRadius && drawImage_.image != VK_NULL_HANDLE;
+    const bool mixOriginal = debugLevel_ <= 0 && drawImage_.image != VK_NULL_HANDLE;
     if (mixOriginal) {
         const VkImageLayout drawOld =
                 pyramidReady_ ? VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL : VK_IMAGE_LAYOUT_UNDEFINED;
@@ -578,7 +567,7 @@ const VulkanImage& KawaseBlur::presentImage() const {
         if (i >= downImages_.size()) i = downImages_.size() - 1;
         return downImages_[i];
     }
-    if (radius_ < kMaxCrossFadeRadius && drawImage_.image != VK_NULL_HANDLE) return drawImage_;
+    if (drawImage_.image != VK_NULL_HANDLE) return drawImage_;
     if (!upImages_.empty()) return upImages_.back();
     return downImages_.front();
 }

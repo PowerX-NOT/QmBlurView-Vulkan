@@ -373,9 +373,11 @@ bool blurLocked(uint8_t* rgba, int w, int h, int stride, float radius) {
 
 }  // namespace
 
-int vulkan_kawase_blur_rgba(unsigned char* rgba, int w, int h, int stride, float radius) {
+int vulkan_kawase_blur_rgba(unsigned char* rgba, int w, int h, int stride, float radius, int rounds) {
     if (!rgba || w <= 0 || h <= 0 || stride < w * 4) return 0;
     if (radius < 1.0f) radius = 1.0f;
+    if (rounds < 1) rounds = 1;
+    radius *= static_cast<float>(rounds);
     std::lock_guard<std::mutex> lock(gMu);
     if (!initLocked()) return 0;
     return blurLocked(rgba, w, h, stride, radius) ? 1 : 0;

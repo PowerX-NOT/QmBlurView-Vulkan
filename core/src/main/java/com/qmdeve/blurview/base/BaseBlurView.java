@@ -80,6 +80,7 @@ public abstract class BaseBlurView extends View {
     public Bitmap mBlurredBitmap;
     protected Canvas mBlurringCanvas;
     protected final Paint mPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
+    private final Paint mBitmapPaint = new Paint(Paint.FILTER_BITMAP_FLAG);
     public final Rect mRectSrc = new Rect();
     public final Rect mRectDst = new Rect();
     public View mDecorView;
@@ -481,13 +482,8 @@ public abstract class BaseBlurView extends View {
             return false;
         }
 
-        float downsampleFactor = mDownsampleFactor > 0 ? mDownsampleFactor : 2.52f;
+        float downsampleFactor = mDownsampleFactor > 0 ? mDownsampleFactor : 1f;
         float radius = mBlurRadius / downsampleFactor;
-        
-        if (mDownsampleFactor <= 0 && radius > 25) {
-            downsampleFactor *= radius / 25;
-            radius = 25;
-        }
 
         int width = getWidth();
         int height = getHeight();
@@ -818,7 +814,7 @@ public abstract class BaseBlurView extends View {
         try {
         if (mBlurredBitmap != null) {
             mRectSrc.set(0, 0, mBlurredBitmap.getWidth(), mBlurredBitmap.getHeight());
-            canvas.drawBitmap(mBlurredBitmap, mRectSrc, mRectDst, null);
+            canvas.drawBitmap(mBlurredBitmap, mRectSrc, mRectDst, mBitmapPaint);
         }
         } finally {
             Trace.endSection();
