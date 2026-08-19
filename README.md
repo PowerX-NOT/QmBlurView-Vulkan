@@ -12,9 +12,7 @@ Android blur surfaces and blur-backed widgets, driven by a native **Vulkan Dual 
 
 `QmBlurView` captures the content behind a view, blurs it on the GPU, and draws the result with an overlay and optional rounded corners.
 
-The blur itself is not a CPU Gaussian / StackBlur pass. `core` ships a native library (`libQmVulkanBlur.so`) that runs Dual Kawase V2 compute shaders — the same downsample / upsample pyramid used by Android RenderEngine — then reads the bitmap back for the widget to draw.
-
-Widgets live in `core`. Bottom navigation is a separate `navigation` artifact. Glide and Picasso helpers live in `transform`.
+The blur runs Dual Kawase V2 compute shaders on Vulkan — the same downsample / upsample pyramid used by Android's RenderEngine — then reads the bitmap back for the widget to draw. No CPU Gaussian or StackBlur.
 
 ## Preview
 
@@ -29,40 +27,40 @@ Widgets live in `core`. Bottom navigation is a separate `navigation` artifact. G
 ## Requirements
 
 - `minSdk 21`
-- A device with `libvulkan.so` (Android 7 / API 24+) for the native blur to run
-- Building `core` from source needs NDK `28.2.13676358` and CMake `3.22.1`
-
-On a device without Vulkan, `System.loadLibrary("QmVulkanBlur")` can fail and the widgets will not blur.
+- A device with Vulkan support (Android 7 / API 24+)
+- NDK `28.2.13676358` and CMake `3.22.1` to build from source
 
 ## Install
 
-This Vulkan package is not on Maven Central yet. Clone the repo and use the modules:
+Not on Maven Central yet. Clone the repo and use the modules as local dependencies:
 
 ```gradle
 dependencies {
     implementation project(':core')
 
     // Optional
-    implementation project(':navigation')
-    implementation project(':transform')
+    implementation project(':navigation')   // BlurBottomNavigationView
+    implementation project(':transform')    // Glide / Picasso blur transforms
 }
 ```
 
-## Widgets (`core`)
+## Modules
 
-| Class | Role |
+| Module | Contents |
 | --- | --- |
-| `BlurView` | Frosted overlay that blurs whatever is behind it |
-| `BlurViewGroup` | Same pipeline, hosted inside a `ViewGroup` |
-| `ProgressiveBlurView` / `ProgressiveBlurViewGroup` | Directional fade of blur strength |
-| `BlurButtonView` | Button with a blurred background |
-| `BlurFloatingButtonView` | FAB-style control on a blur surface |
-| `BlurSwitchButtonView` | Switch on a blur surface |
-| `BlurTitlebarView` | Title bar that blurs content scrolling underneath |
+| `core` | All blur widgets + native `libQmVulkanBlur.so` |
+| `navigation` | `BlurBottomNavigationView` + tab management |
+| `transform` | Glide and Picasso `BlurTransformation` |
+| `app` | Demo app |
+| `benchmark` | Macrobenchmark frame-timing scenes |
 
-## BlurView
+---
 
-XML:
+## Widgets
+
+### BlurView / BlurViewGroup
+
+Frosted glass overlay that captures and blurs whatever is behind it.
 
 ```xml
 <com.qmdeve.vulkanblur.widget.BlurView
@@ -75,8 +73,6 @@ XML:
     app:downsampleFactor="2.5" />
 ```
 
-Code:
-
 ```java
 BlurView blurView = findViewById(R.id.blurView);
 blurView.setBlurRadius(24f);
@@ -85,50 +81,204 @@ blurView.setOverlayColor(0x66FFFFFF);
 blurView.setCornerRadius(16f);
 ```
 
-| API / attr | What it does |
+`BlurViewGroup` works the same way but as a `ViewGroup` — child views get a blurred background:
+
+```xml
+<com.qmdeve.vulkanblur.widget.BlurViewGroup
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:blurRadius="20dp"
+    app:overlayColor="#50FFFFFF"
+    app:cornerRadius="12dp">
+
+    <TextView android:text="Content on blur" />
+
+</com.qmdeve.vulkanblur.widget.BlurViewGroup>
+```
+
+**Attributes:**
+
+| Attr / Setter | Description |
 | --- | --- |
-| `blurRadius` / `setBlurRadius` | Strength. Dual Kawase V2 maps this to pyramid depth and sample offset |
-| `setBlurRounds` | Extra strength: native uses `radius * rounds` (1–15) |
-| `overlayColor` / `setOverlayColor` | Tint drawn on top of the blurred bitmap |
-| `cornerRadius` / per-corner setters | Clip the result |
-| `downsampleFactor` / `setDownsampleFactor` | Capture scale. `0` (default) uses `2.52`. Higher is cheaper, softer |
+| `blurRadius` / `setBlurRadius(float)` | Blur strength. Dual Kawase maps this to pyramid depth + sample offset |
+| `setBlurRounds(int)` | Multiplier — native computes `radius × rounds` (1–15) |
+| `overlayColor` / `setOverlayColor(int)` | Tint drawn on top of the blurred bitmap |
+| `cornerRadius` / `setCornerRadius(float)` | Uniform rounded corners |
+| `topLeftCornerRadius`, `topRightCornerRadius`, `bottomLeftCornerRadius`, `bottomRightCornerRadius` | Per-corner rounding |
+| `downsampleFactor` / `setDownsampleFactor(float)` | Capture scale. Default `2.52×`. Higher = cheaper + softer |
 
-The view captures behind itself, downsamples for scroll cost, runs Dual Kawase on that bitmap, then draws with bilinear filtering.
+---
 
-## Image blur (`transform`)
+### BlurButtonView
 
-Same native backend, for static bitmaps.
+Tappable button with a blurred background.
 
-Glide:
+```xml
+<com.qmdeve.vulkanblur.widget.BlurButtonView
+    android:layout_width="wrap_content"
+    android:layout_height="48dp"
+    android:text="Subscribe"
+    android:textSize="14sp"
+    android:textColor="#FFFFFF"
+    android:icon="@drawable/ic_check"
+    app:buttonBlurRadius="20dp"
+    app:buttonOverlayColor="#80000000"
+    app:buttonCornerRadius="24dp"
+    app:buttonTextBold="true"
+    app:buttonIconSize="18dp"
+    app:buttonIconPadding="8dp"
+    app:buttonIconTint="#FFFFFF" />
+```
+
+| Attr | Description |
+| --- | --- |
+| `android:text`, `android:textSize`, `android:textColor` | Label |
+| `android:icon` | Leading icon drawable |
+| `android:gravity` | Text + icon alignment |
+| `buttonBlurRadius` | Blur strength |
+| `buttonOverlayColor` | Tint over the blur |
+| `buttonCornerRadius` | Corner rounding |
+| `buttonTextColorPressed` | Text color when pressed |
+| `buttonTextColorDisabled` | Text color when disabled |
+| `buttonTextBold` | Bold label |
+| `buttonIconSize`, `buttonIconPadding`, `buttonIconTint` | Icon sizing and color |
+
+---
+
+### BlurFloatingButtonView
+
+FAB-style floating action button on a blur surface.
+
+```xml
+<com.qmdeve.vulkanblur.widget.BlurFloatingButtonView
+    android:layout_width="56dp"
+    android:layout_height="56dp"
+    android:icon="@drawable/ic_add"
+    app:blurRadius="25dp"
+    app:overlayColor="#AA000000"
+    app:cornerRadius="28dp" />
+```
+
+Uses the same `blurRadius`, `overlayColor`, and `cornerRadius` attrs as `BlurView`.
+
+---
+
+### BlurSwitchButtonView
+
+Toggle switch on a blur surface.
+
+```xml
+<com.qmdeve.vulkanblur.widget.BlurSwitchButtonView
+    android:layout_width="52dp"
+    android:layout_height="28dp"
+    app:baseColor="#3366FF"
+    app:useSolidColorMode="false" />
+```
+
+| Attr | Description |
+| --- | --- |
+| `baseColor` | Accent color |
+| `useSolidColorMode` | `false` (default) = blurred background; `true` = solid color fill |
+| `solidOnColor` | Fill color when on (solid mode only) |
+| `solidOffColor` | Fill color when off (solid mode only) |
+
+---
+
+### BlurTitlebarView
+
+Title/subtitle bar that blurs content scrolling underneath.
+
+```xml
+<com.qmdeve.vulkanblur.widget.BlurTitlebarView
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    app:titleText="Settings"
+    app:subtitleText="Account"
+    app:titleTextColor="#FFFFFF"
+    app:subtitleTextColor="#AAAAAA"
+    app:showBack="true"
+    app:backIcon="@drawable/ic_arrow_back"
+    app:backIconTint="#FFFFFF"
+    app:menuText="Save"
+    app:menuTextColor="#3366FF"
+    app:centerTitle="true" />
+```
+
+| Attr | Description |
+| --- | --- |
+| `titleText`, `subtitleText` | Title and subtitle strings |
+| `titleTextColor`, `subtitleTextColor` | Text colors |
+| `showBack` | Show back button |
+| `backIcon`, `backIconTint` | Back button drawable and tint |
+| `menuText`, `menuTextColor` | Right-side menu text |
+| `menuIcon`, `menuIconTint` | Right-side menu icon |
+| `centerTitle` | Center-align title |
+
+---
+
+### ProgressiveBlurView / ProgressiveBlurViewGroup
+
+Directional gradient blur — fades from sharp to blurred along one edge.
+
+```xml
+<com.qmdeve.vulkanblur.widget.ProgressiveBlurView
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    app:progressiveDirection="topToBottom"
+    app:progressiveLayers="4"
+    app:progressiveBlurRadius="25dp"
+    app:progressiveOverlayColor="#20000000" />
+```
+
+| Attr | Description |
+| --- | --- |
+| `progressiveDirection` | `topToBottom`, `bottomToTop`, `leftToRight`, `rightToLeft` |
+| `progressiveLayers` | Number of blur layers. More = smoother gradient, higher cost |
+| `progressiveBlurRadius` | Max blur at the blurred edge |
+| `progressiveOverlayColor` | Tint over the gradient |
+
+---
+
+### BlurBottomNavigationView (`navigation` module)
+
+Bottom tab bar with a blurred background. Pairs with `ViewPager` / `ViewPager2`.
+
+```xml
+<com.qmdeve.vulkanblur.widget.BlurBottomNavigationView
+    android:layout_width="match_parent"
+    android:layout_height="56dp"
+    app:menu="@menu/bottom_nav"
+    app:navBlurRadius="25dp"
+    app:navOverlayColor="#D0FFFFFF"
+    app:navSelectedColor="#3366FF"
+    app:navUnselectedColor="#888888"
+    app:item_iconSize="24dp"
+    app:item_textSize="12sp"
+    app:item_textBold="true" />
+```
+
+---
+
+## Image Blur Transforms (`transform` module)
+
+Apply the same Vulkan blur to static bitmaps loaded by Glide or Picasso.
+
+**Glide:**
 
 ```java
 Glide.with(this)
     .load(url)
-    .transform(new com.qmdeve.vulkanblur.transform.glide.BlurTransformation(24f, 50f))
+    .transform(new com.qmdeve.vulkanblur.transform.glide.BlurTransformation(25f, 16f))
     .into(imageView);
 ```
 
-Picasso:
+**Picasso:**
 
 ```java
 Picasso.get()
     .load(url)
-    .transform(new com.qmdeve.vulkanblur.transform.picasso.BlurTransformation(25f, 50f))
+    .transform(new com.qmdeve.vulkanblur.transform.picasso.BlurTransformation(25f, 16f))
     .into(imageView);
 ```
 
-`BlurTransformation()` defaults to radius `25`. The second argument is corner radius in px (`0` = square).
-
-## Navigation (`navigation`)
-
-`BlurBottomNavigationView` is a tab bar that blurs the content behind it. Pair it with `ViewPager` / `ViewPager2` — see `BlurBottomNavigationActivity` in the demo.
-
-## Modules
-
-| Module | Artifact | Contents |
-| --- | --- | --- |
-| `core` | `com.qmdeve.vulkanblur:core` | Widgets + `libQmVulkanBlur.so` |
-| `navigation` | `com.qmdeve.vulkanblur:navigation` | `BlurBottomNavigationView` |
-| `transform` | `com.qmdeve.vulkanblur:transform` | Glide / Picasso transforms |
-| `app` | — | Demo |
-| `benchmark` | — | Frame-timing scenes |
+Constructor: `BlurTransformation(float blurRadius, float cornerRadiusPx)` — defaults to `(25f, 0f)`.
