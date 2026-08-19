@@ -669,6 +669,20 @@ public abstract class BaseBlurView extends View {
                     return false;
                 }
                 return false;
+            } catch (IllegalStateException e) {
+                // Compose can throw during RenderNode recording:
+                //   "Recording currently in progress - missing #endRecording() call?"
+                // In that case, avoid drawing the decor-view onto our intermediate Canvas,
+                // and switch to the PixelCopy capture path instead.
+                if (e.getMessage() != null
+                        && e.getMessage().contains("Recording currently in progress")
+                        && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    Log.w(Utils.TAG, "Render recording in progress; switching to PixelCopy fallback: " + e.getMessage());
+                    mUsePixelCopyFallback = true;
+                    performPixelCopyBlur();
+                    return false;
+                }
+                throw e;
             } finally {
                 Trace.endSection();
             }
